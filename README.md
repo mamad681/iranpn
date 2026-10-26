@@ -28,3 +28,22 @@
 
 ## ضریب حجم (جدید)
 حجم نهایی مشتری = حجم پلن × ضریب. مثلاً پلن ۱۰ گیگ با ضریب ۲ → توی لینک ساب (و کلاینت) ۲۰ گیگ نشون داده می‌شه و مصرف واقعی از همون ۲۰ گیگ کم می‌شه.
+
+
+## L2TP/IPsec setup
+
+L2TP is installed on the **VPN VPS**, not on the Node.js/Railway panel container.
+Run `server-setup/install-xray.sh DOMAIN PANEL_URL SYNC_KEY` as root on a supported
+Ubuntu 22.04/24.04 VPS after the domain points to that VPS and the panel's `SYNC_KEY`
+environment variable is set. The installer fetches the L2TP pre-shared key from the
+panel's authenticated `/api/sync/config` endpoint and configures StrongSwan, xl2tpd,
+PPP, forwarding, and NAT. Allow UDP ports 500, 4500, and 1701 in the VPS provider
+firewall/security group as well as the host firewall.
+
+The panel sync timer refreshes L2TP user credentials in `/etc/ppp/chap-secrets`.
+Use each subscription's username/password shown by the panel's L2TP details; the
+IPsec pre-shared key is the panel setting. L2TP/IPsec requires a real VPS with
+kernel networking and root privileges; it cannot be enabled from the web panel
+container alone. After deployment, check `systemctl status strongswan-starter xl2tpd`
+and `journalctl -u xl2tpd -u strongswan-starter --since "10 minutes ago"`.
+
